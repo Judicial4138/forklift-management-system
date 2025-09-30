@@ -1,0 +1,175 @@
+:root {
+    --status-available: #28a745;
+    --status-in-use: #dc3545;
+    --status-maintenance: #ffc107;
+}
+
+body {
+    padding-bottom: 60px; /* Space for bottom navigation */
+    background-color: #f8f9fa;
+}
+
+/* Forklift Cards */
+.forklift-card {
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.forklift-card .card-body {
+    padding: 1.25rem;
+}
+
+/* Status Indicators */
+.status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    color: white;
+}
+
+.status-available-badge {
+    background-color: var(--status-available);
+}
+
+.status-in-use-badge {
+    background-color: var(--status-in-use);
+}
+
+.status-maintenance-badge {
+    background-color: var(--status-maintenance);
+    color: #212529;
+}
+
+/* Status Cards */
+.status-available {
+    border-left: 4px solid var(--status-available);
+}
+
+.status-in-use {
+    border-left: 4px solid var(--status-in-use);
+}
+
+.status-maintenance {
+    border-left: 4px solid var(--status-maintenance);
+}
+
+/* Buttons */
+.btn-action {
+    margin: 0.2rem;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    padding: 0.5rem 0;
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    color: #6c757d;
+    background: none;
+    border: none;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.nav-btn i {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-btn.active {
+    color: #0d6efd;
+}
+
+/* Utility Classes */
+.fs-7 {
+    font-size: 0.875rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .btn-action {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    .btn-group-vertical {
+        width: 100%;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Animation */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+    animation: pulse 1.5s infinite;
+}
+
+/* Reservation List */
+.reservation-item {
+    border-left: 3px solid #0d6efd;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reservation-item.active {
+    border-left-color: #198754;
+}
+
+/* Form Controls */
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Card Hover Effect */
+.card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
