@@ -1,16 +1,35 @@
-# Render Blueprint for Forklift Management System
-# このファイルは、Renderがアプリケーションをデプロイする方法を定義します
-
 services:
   - type: web
-    name: forklift-management-system  # アプリケーション名
-    env: static  # 静的サイトとしてデプロイ
+    name: forklift-dispatch-app
+    env: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./  # ビルドされたファイルのパス（静的サイトの場合はルート）
+    startCommand: npm run start
     envVars:
       - key: NODE_VERSION
-        value: 18.x  # Node.jsのバージョン
-    routes:
-      - type: rewrite
-        source: /(.*)
-        destination: /index.html  # シングルページアプリケーション用のリライトルール
+        value: 18.x
+      - key: NPM_CONFIG_PRODUCTION
+        value: 'false'
+    plan: free
+    envVars:
+      # Firebase Configuration
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+      - key: VITE_FIREBASE_MEASUREMENT_ID
+        sync: false
+      # App Configuration
+      - key: VITE_APP_NAME
+        value: 'フォークリフト配車アプリ'
+      - key: VITE_APP_VERSION
+        value: '1.0.0'
+      - key: VITE_APP_DESCRIPTION
+        value: 'リアルタイムフォークリフト配車管理システム'
