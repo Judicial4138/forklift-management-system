@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>車両管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind configuration for dark mode
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'available': '#10B981',
+                        'reserved': '#F59E0B',
+                        'in-use': '#EF4444',
+                        'maintenance': '#6B7280',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles */
+        .map-container {
+            height: 60vh;
+            background-color: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .map-area {
+            position: absolute;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .vehicle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .vehicle:hover {
+            transform: scale(1.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        .dark .modal-content {
+            background-color: #1f2937;
+            color: white;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+        }
+        .dark .checklist-item {
+            border-color: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-blue-600 text-white p-4 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-bold">車両管理システム</h1>
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto p-4">
+            <!-- Dashboard View -->
+            <div id="dashboardView">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold mb-2 dark:text-white">工場マップ</h2>
+                    <div class="map-container rounded-lg shadow-md">
+                        <!-- Map Areas -->
+                        <div class="map-area" style="top: 10%; left: 10%; width: 30%; height: 40%; background-color: #d1fae5;">
+                            <span class="dark:text-gray-900">1号ドック</span>
+                        </div>
+                        <div class="map-area" style="top: 10%; right: 10%; width: 30%; height: 40%; background-color: #dbeafe;">
+                            <span class="dark:text-gray-900">2号ドック</span>
+                        </div>
+                        <div class="map-area" style="bottom: 10%; left: 10%; width: 30%; height: 40%; background-color: #fef3c7;">
+                            <span class="dark:text-gray-900">1・2号岸壁</span>
+                        </div>
+                        <div class="map-area" style="bottom: 10%; right: 10%; width: 30%; height: 40%; background-color: #f3e8ff;">
+                            <span class="dark:text-gray-900">2PE</span>
+                        </div>
+
+                        <!-- Vehicles -->
+                        <div class="vehicle bg-available" style="top: 25%; left: 25%;" data-vehicle-id="F-30" data-status="available">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l4.5-4.5M3 16l4.5 4.5M21 16l-4.5 4.5M21 8l-4.5-4.5M9 4h6m-6 16h6" />
+                            </svg>
+                        </div>
+                        <div class="vehicle bg-reserved" style="top: 25%; right: 25%;" data-vehicle-id="F-31" data-status="reserved">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l4.5-4.5M3 16l4.5 4.5M21 16l-4.5 4.5M21 8l-4.5-4.5M9 4h6m-6 16h6" />
+                            </svg>
+                        </div>
+                        <div class="vehicle bg-in-use" style="bottom: 25%; left: 25%;" data-vehicle-id="F-32" data-status="in-use">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l4.5-4.5M3 16l4.5 4.5M21 16l-4.5 4.5M21 8l-4.5-4.5M9 4h6m-6 16h6" />
+                            </svg>
+                        </div>
+                        <div class="vehicle bg-maintenance" style="bottom: 25%; right: 25%;" data-vehicle-id="F-33" data-status="maintenance">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="mt-6 p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                    <h3 class="text-lg font-medium mb-3 dark:text-white">凡例</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-available mr-2"></div>
+                            <span class="text-sm dark:text-gray-300">利用可能</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-reserved mr-2"></div>
+                            <span class="text-sm dark:text-gray-300">予約済</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-in-use mr-2"></div>
+                            <span class="text-sm dark:text-gray-300">使用中</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-maintenance mr-2"></div>
+                            <span class="text-sm dark:text-gray-300">メンテナンス中</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-Use View (initially hidden) -->
+            <div id="inUseView" class="hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
+                    <h2 class="text-2xl font-bold mb-4 dark:text-white">使用中</h2>
+                    <div class="text-4xl font-bold mb-6 dark:text-white" id="currentVehicleId">F-30</div>
+                    
+                    <div class="mb-8">
+                        <div class="text-gray-600 dark:text-gray-300 mb-1">利用時間</div>
+                        <div class="text-5xl font-mono font-bold dark:text-white" id="usageTimer">00:00:00</div>
+                    </div>
+                    
+                    <button id="endUsageBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-6 px-6 rounded-lg text-xl transition-colors">
+                        利用を終了する
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vehicle Detail Modal -->
+    <div id="vehicleDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold dark:text-white">車両情報</h3>
+                <button id="closeDetailModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <div class="text-lg font-medium mb-2 dark:text-gray-200">車両番号: <span id="modalVehicleId" class="font-bold">F-30</span></div>
+                <div class="flex items-center">
+                    <span class="mr-2 dark:text-gray-200">ステータス:</span>
+                    <span id="modalVehicleStatus" class="px-2 py-1 rounded-full text-sm font-medium text-white bg-available">利用可能</span>
+                </div>
+                <div id="currentUserContainer" class="mt-2 hidden">
+                    <div class="dark:text-gray-200">利用者: <span id="currentUser" class="font-medium">山田 太郎</span></div>
+                </div>
+            </div>
+            
+            <button id="useVehicleBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg text-lg mb-4 transition-colors">
+                この車両を利用する
+            </button>
+            
+            <button id="reportIssueBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg text-sm transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
+                問題を報告する
+            </button>
+        </div>
+    </div>
+
+    <!-- Pre-Use Checklist Modal -->
+    <div id="checklistModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">始業前点検</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">以下の項目を確認し、問題がないかチェックしてください。</p>
+            
+            <div id="checklistItems" class="mb-6">
+                <div class="checklist-item dark:bg-gray-700">
+                    <input type="checkbox" id="check1" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-800">
+                    <label for="check1" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-200">ブレーキは正常に作動しますか？</label>
+                </div>
+                <div class="checkitem dark:bg-gray-700">
+                    <input type="checkbox" id="check2" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-800">
+                    <label for="check2" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-200">タイヤに異常はありませんか？</label>
+                </div>
+                <div class="checklist-item dark:bg-gray-700">
+                    <input type="checkbox" id="check3" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-800">
+                    <label for="check3" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-200">ライトは点灯しますか？</label>
+                </div>
+                <div class="checklist-item dark:bg-gray-700">
+                    <input type="checkbox" id="check4" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-800">
+                    <label for="check4" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-200">警告音は鳴りますか？</label>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button id="cancelChecklistBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
+                    キャンセル
+                </button>
+                <button id="reportProblemBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    問題あり
+                </button>
+            </div>
+            <button id="proceedToReservationBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mt-4 hidden transition-colors">
+                点検を完了して予約に進む
+            </button>
+        </div>
+    </div>
+
+    <!-- Reservation Modal -->
+    <div id="reservationModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">予約情報の入力</h3>
+            
+            <div class="mb-4">
+                <label for="destination" class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">目的地</label>
+                <select id="destination" class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="dock1">1号ドック</option>
+                    <option value="dock2">2号ドック</option>
+                    <option value="dock3">3号ドック</option>
+                    <option value="pier">1・2号岸壁</option>
+                    <option value="pe2">2PE</option>
+                </select>
+            </div>
+            
+            <div class="mb-6">
+                <label for="workType" class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">作業内容</label>
+                <select id="workType" class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="pallet">パレット積込</option>
+                    <option value="unload">トラック荷降</option>
+                    <option value="material">資材運搬</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button id="cancelReservationBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
+                    キャンセル
+                </button>
+                <button id="confirmReservationBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    利用を開始する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // アプリケーションの状態管理
+        const state = {
+            currentVehicle: null,
+            timer: null,
+            secondsElapsed: 0,
+            darkMode: localStorage.getItem('darkMode') === 'true',
+            vehicles: [
+                { id: 'F-30', status: 'available', user: null },
+                { id: 'F-31', status: 'reserved', user: '佐藤 花子' },
+                { id: 'F-32', status: 'in-use', user: '山田 太郎' },
+                { id: 'F-33', status: 'maintenance', user: null }
+            ]
+        };
+
+        // DOM要素の取得
+        const elements = {
+            darkModeToggle: document.getElementById('darkModeToggle'),
+            dashboardView: document.getElementById('dashboardView'),
+            inUseView: document.getElementById('inUseView'),
+            currentVehicleId: document.getElementById('currentVehicleId'),
+            usageTimer: document.getElementById('usageTimer'),
+            endUsageBtn: document.getElementById('endUsageBtn'),
+            vehicleDetailModal: document.getElementById('vehicleDetailModal'),
+            closeDetailModal: document.getElementById('closeDetailModal'),
+            modalVehicleId: document.getElementById('modalVehicleId'),
+            modalVehicleStatus: document.getElementById('modalVehicleStatus'),
+            currentUserContainer: document.getElementById('currentUserContainer'),
+            currentUser: document.getElementById('currentUser'),
+            useVehicleBtn: document.getElementById('useVehicleBtn'),
+            reportIssueBtn: document.getElementById('reportIssueBtn'),
+            checklistModal: document.getElementById('checklistModal'),
+            cancelChecklistBtn: document.getElementById('cancelChecklistBtn'),
+            reportProblemBtn: document.getElementById('reportProblemBtn'),
+            proceedToReservationBtn: document.getElementById('proceedToReservationBtn'),
+            reservationModal: document.getElementById('reservationModal'),
+            cancelReservationBtn: document.getElementById('cancelReservationBtn'),
+            confirmReservationBtn: document.getElementById('confirmReservationBtn'),
+            checkboxes: document.querySelectorAll('input[type="checkbox"]')
+        };
+
+        // ダークモードの初期化
+        function initDarkMode() {
+            if (state.darkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            localStorage.setItem('darkMode', state.darkMode);
+        }
+
+        // モーダルを表示する関数
+        function showModal(modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // モーダルを非表示にする関数
+        function hideModal(modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // 車両のステータスに応じた色クラスを返す
+        function getStatusColorClass(status) {
+            const colors = {
+                'available': 'bg-available',
+                'reserved': 'bg-reserved',
+                'in-use': 'bg-in-use',
+                'maintenance': 'bg-maintenance'
+            };
+            return colors[status] || 'bg-gray-500';
+        }
+
+        // 車両のステータスに応じた表示テキストを返す
+        function getStatusText(status) {
+            const texts = {
+                'available': '利用可能',
+                'reserved': '予約済',
+                'in-use': '使用中',
+                'maintenance': 'メンテナンス中'
+            };
+            return texts[status] || status;
+        }
+
+        // 車両の詳細をモーダルに表示
+        function showVehicleDetail(vehicleId) {
+            const vehicle = state.vehicles.find(v => v.id === vehicleId);
+            if (!vehicle) return;
+
+            state.currentVehicle = vehicle;
+            elements.modalVehicleId.textContent = vehicle.id;
+            elements.modalVehicleStatus.textContent = getStatusText(vehicle.status);
+            elements.modalVehicleStatus.className = 'px-2 py-1 rounded-full text-sm font-medium text-white ' + getStatusColorClass(vehicle.status);
+            
+            if (vehicle.user) {
+                elements.currentUser.textContent = vehicle.user;
+                elements.currentUserContainer.classList.remove('hidden');
+            } else {
+                elements.currentUserContainer.classList.add('hidden');
+            }
+
+            // 利用可能な車両のみ「この車両を利用する」ボタンを表示
+            if (vehicle.status === 'available') {
+                elements.useVehicleBtn.classList.remove('hidden');
+            } else {
+                elements.useVehicleBtn.classList.add('hidden');
+            }
+
+            showModal(elements.vehicleDetailModal);
+        }
+
+        // チェックリストのバリデーション
+        function validateChecklist() {
+            const allChecked = Array.from(elements.checkboxes).every(checkbox => checkbox.checked);
+            elements.proceedToReservationBtn.classList.toggle('hidden', !allChecked);
+        }
+
+        // タイマーをフォーマットする
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return [
+                h.toString().padStart(2, '0'),
+                m.toString().padStart(2, '0'),
+                s.toString().padStart(2, '0')
+            ].join(':');
+        }
+
+        // タイマーを開始する
+        function startTimer() {
+            state.secondsElapsed = 0;
+            elements.usageTimer.textContent = formatTime(state.secondsElapsed);
+            
+            state.timer = setInterval(() => {
+                state.secondsElapsed++;
+                elements.usageTimer.textContent = formatTime(state.secondsElapsed);
+            }, 1000);
+        }
+
+        // タイマーを停止する
+        function stopTimer() {
+            if (state.timer) {
+                clearInterval(state.timer);
+                state.timer = null;
+            }
+        }
+
+        // 車両の使用を開始する
+        function startUsingVehicle() {
+            if (!state.currentVehicle) return;
+            
+            // 車両のステータスを更新
+            const vehicle = state.vehicles.find(v => v.id === state.currentVehicle.id);
+            if (vehicle) {
+                vehicle.status = 'in-use';
+                vehicle.user = 'あなた'; // 実際のアプリではログインユーザー名を使用
+            }
+            
+            // ビューを切り替え
+            elements.dashboardView.classList.add('hidden');
+            elements.inUseView.classList.remove('hidden');
+            elements.currentVehicleId.textContent = vehicle.id;
+            
+            // タイマーを開始
+            startTimer();
+            
+            // 車両の表示を更新
+            updateVehicleDisplay(vehicle.id);
+        }
+
+        // 車両の使用を終了する
+        function endUsingVehicle() {
+            if (!state.currentVehicle) return;
+            
+            // 車両のステータスを更新
+            const vehicle = state.vehicles.find(v => v.id === state.currentVehicle.id);
+            if (vehicle) {
+                vehicle.status = 'available';
+                vehicle.user = null;
+            }
+            
+            // タイマーを停止
+            stopTimer();
+            
+            // ビューを切り替え
+            elements.inUseView.classList.add('hidden');
+            elements.dashboardView.classList.remove('hidden');
+            
+            // 車両の表示を更新
+            updateVehicleDisplay(vehicle.id);
+            
+            // チェックボックスをリセット
+            elements.checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            elements.proceedToReservationBtn.classList.add('hidden');
+        }
+
+        // 車両の表示を更新する
+        function updateVehicleDisplay(vehicleId) {
+            const vehicle = state.vehicles.find(v => v.id === vehicleId);
+            if (!vehicle) return;
+            
+            // マップ上の車両アイコンを更新
+            const vehicleElement = document.querySelector(`.vehicle[data-vehicle-id="${vehicleId}"]`);
+            if (vehicleElement) {
+                // ステータスに応じたクラスを更新
+                vehicleElement.className = `vehicle ${getStatusColorClass(vehicle.status)}`;
+                // アイコンを設定
+                let icon = '';
+                if (vehicle.status === 'maintenance') {
+                    icon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>';
+                } else {
+                    icon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l4.5-4.5M3 16l4.5 4.5M21 16l-4.5 4.5M21 8l-4.5-4.5M9 4h6m-6 16h6" /></svg>';
+                }
+                vehicleElement.innerHTML = icon;
+            }
+        }
+
+        // イベントリスナーの設定
+        function setupEventListeners() {
+            // ダークモード切り替え
+            elements.darkModeToggle.addEventListener('click', () => {
+                state.darkMode = !state.darkMode;
+                initDarkMode();
+            });
+
+            // 車両アイコンクリック
+            document.querySelectorAll('.vehicle').forEach(vehicle => {
+                vehicle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const vehicleId = vehicle.getAttribute('data-vehicle-id');
+                    showVehicleDetail(vehicleId);
+                });
+            });
+
+            // モーダルを閉じる
+            elements.closeDetailModal.addEventListener('click', () => {
+                hideModal(elements.vehicleDetailModal);
+            });
+
+            // この車両を利用するボタン
+            elements.useVehicleBtn.addEventListener('click', () => {
+                hideModal(elements.vehicleDetailModal);
+                showModal(elements.checklistModal);
+            });
+
+            // 問題を報告するボタン
+            elements.reportIssueBtn.addEventListener('click', () => {
+                if (confirm('この車両に問題があると報告しますか？')) {
+                    const vehicle = state.vehicles.find(v => v.id === state.currentVehicle.id);
+                    if (vehicle) {
+                        vehicle.status = 'maintenance';
+                        updateVehicleDisplay(vehicle.id);
+                        alert('問題を報告しました。担当者が対応いたします。');
+                        hideModal(elements.vehicleDetailModal);
+                    }
+                }
+            });
+
+            // チェックリストのチェックボックス
+            elements.checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', validateChecklist);
+            });
+
+            // チェックリストのキャンセルボタン
+            elements.cancelChecklistBtn.addEventListener('click', () => {
+                hideModal(elements.checklistModal);
+            });
+
+            // 問題ありボタン
+            elements.reportProblemBtn.addEventListener('click', () => {
+                if (confirm('この車両に問題があると報告しますか？')) {
+                    const vehicle = state.vehicles.find(v => v.id === state.currentVehicle.id);
+                    if (vehicle) {
+                        vehicle.status = 'maintenance';
+                        updateVehicleDisplay(vehicle.id);
+                        alert('問題を報告しました。担当者が対応いたします。');
+                        hideModal(elements.checklistModal);
+                    }
+                }
+            });
+
+            // 予約に進むボタン
+            elements.proceedToReservationBtn.addEventListener('click', () => {
+                hideModal(elements.checklistModal);
+                showModal(elements.reservationModal);
+            });
+
+            // 予約キャンセルボタン
+            elements.cancelReservationBtn.addEventListener('click', () => {
+                hideModal(elements.reservationModal);
+            });
+
+            // 利用を開始するボタン
+            elements.confirmReservationBtn.addEventListener('click', () => {
+                hideModal(elements.reservationModal);
+                startUsingVehicle();
+            });
+
+            // 利用を終了するボタン
+            elements.endUsageBtn.addEventListener('click', () => {
+                if (confirm('車両の利用を終了しますか？')) {
+                    endUsingVehicle();
+                }
+            });
+
+            // モーダルの外側をクリックで閉じる
+            window.addEventListener('click', (e) => {
+                if (e.target === elements.vehicleDetailModal) {
+                    hideModal(elements.vehicleDetailModal);
+                } else if (e.target === elements.checklistModal) {
+                    hideModal(elements.checklistModal);
+                } else if (e.target === elements.reservationModal) {
+                    hideModal(elements.reservationModal);
+                }
+            });
+        }
+
+        // 初期化
+        function init() {
+            initDarkMode();
+            setupEventListeners();
+            console.log('アプリケーションが初期化されました');
+        }
+
+        // アプリケーションを開始
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
