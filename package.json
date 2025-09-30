@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --port $PORT --host"
+    "start": "vite preview --port $PORT --host",
+    "serve": "vite preview --port 3000 --host"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.9",
@@ -19,9 +20,10 @@
     "bootstrap-icons": "^1.11.2",
     "chart.js": "^4.4.1",
     "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "firebase": "^10.6.0",
     "jspdf": "^2.5.1",
-    "serve": "^14.2.0"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "vite": "^4.5.0"
@@ -29,5 +31,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=7.0.0"
-  }
+  },
+  "browserslist": [
+    "defaults"
+  ]
 }

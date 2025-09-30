@@ -23,16 +23,23 @@ export default defineConfig({
     modulePreload: {
       polyfill: false
     },
-    reportCompressedSize: false
+    reportCompressedSize: false,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    }
   },
   server: {
     port: 3000,
     open: true,
-    cors: true
+    cors: true,
+    host: true,
+    strictPort: true
   },
   preview: {
     port: 3000,
-    open: true
+    open: true,
+    host: true
   },
   define: {
     'process.env': {}
@@ -41,5 +48,20 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'public')
     }
-  }
+  },
+  optimizeDeps: {
+    include: ['xlsx', 'file-saver'],
+    esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
+  esbuild: {
+    // Add this if you're using Node.js built-in modules
+    define: {
+      global: 'globalThis',
+    },
+  },
 });
