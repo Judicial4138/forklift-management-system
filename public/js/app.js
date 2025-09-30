@@ -1,3 +1,39 @@
+// Firebaseのインポート
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  getDocs, 
+  updateDoc, 
+  deleteDoc, 
+  serverTimestamp, 
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+  limit,
+  addDoc
+} from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js';
+
+// グローバルにエクスポートされたFirebaseインスタンスを使用
+const db = window.db;
+
+if (!db) {
+  console.error('Firebaseが正しく初期化されていません');
+  document.body.innerHTML = `
+    <div class="container mt-5">
+      <div class="alert alert-danger">
+        <h4 class="alert-heading">エラーが発生しました</h4>
+        <p>Firebaseの初期化に失敗しました。コンソールを確認してください。</p>
+        <hr>
+        <p class="mb-0">ページをリロードしても解決しない場合は、管理者に連絡してください。</p>
+      </div>
+    </div>
+  `;
+  throw new Error('Firebaseが正しく初期化されていません');
+}
+
 // ヘルパー関数: ステータスを日本語に変換
 function getStatusText(status) {
   switch (status) {
@@ -73,13 +109,11 @@ function showToast(type, message) {
   const toast = document.createElement('div');
   toast.className = `toast-container position-fixed bottom-0 end-0 p-3`;
   toast.style.zIndex = '1100';
-  
   // トーストの内容
   const toastContent = document.createElement('div');
   toastContent.className = `toast show`;
   toastContent.role = 'alert';
   toastContent.setAttribute('aria-live', 'assertive');
-  toastContent.setAttribute('aria-atomic', 'true');
   
   // ヘッダー
   const toastHeader = document.createElement('div');

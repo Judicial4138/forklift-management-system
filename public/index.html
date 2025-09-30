@@ -188,7 +188,26 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase App (the core Firebase SDK) -->
-    <script type="module" src="/js/firebase-init.js"></script>
-    <script type="module" src="/js/app.js"></script>
+    <script type="module">
+      // Firebaseの初期化スクリプトをインラインで記述
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js';
+      import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js';
+      
+      // 設定をインポート
+      import firebaseConfig from '/firebase-config.js';
+      
+      // Firebaseを初期化
+      try {
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+        window.db = getFirestore(app);
+        console.log('Firebase initialized successfully');
+      } catch (error) {
+        console.error('Firebase initialization error:', error);
+      }
+      
+      // アプリケーションスクリプトを読み込み
+      import('/js/app.js').catch(console.error);
+    </script>
 </body>
 </html>
