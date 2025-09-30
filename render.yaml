@@ -1,0 +1,16 @@
+# Render Blueprint for Forklift Management System
+# このファイルは、Renderがアプリケーションをデプロイする方法を定義します
+
+services:
+  - type: web
+    name: forklift-management-system  # アプリケーション名
+    env: static  # 静的サイトとしてデプロイ
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./  # ビルドされたファイルのパス（静的サイトの場合はルート）
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x  # Node.jsのバージョン
+    routes:
+      - type: rewrite
+        source: /(.*)
+        destination: /index.html  # シングルページアプリケーション用のリライトルール

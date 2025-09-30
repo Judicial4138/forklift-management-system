@@ -1,0 +1,27 @@
+{
+  "name": "forklift-management-system",
+  "version": "1.0.0",
+  "description": "インテリジェント工場内車両管理システム",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "forklift",
+    "management",
+    "vehicle",
+    "tracking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
